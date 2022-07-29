@@ -1,0 +1,214 @@
+#include "simple.C"
+
+double macro_mlu(  double mlu_scale = 0.5,
+		   double top_gain = 0.1944,
+		   double top_spread = 0.2, 
+		   double bot_gain = 0.1944,
+		   double bot_spread = 0.2, 
+		   double deltaE_a = 0.07,
+		   double gain_c = 0.1,
+		   double lambda = 1.3){
+
+  double thres = 0.0366; 
+  double zmin = -1.3;
+  double zmax = 1.3;
+
+  double gain_top[64]; 
+  double gain_bot[64]; 
+
+  for (int i=0; i<64; i++){
+    gain_top[i] = top_gain+gRandom->Gaus(0.,top_gain*top_spread);
+    gain_bot[i] = bot_gain+gRandom->Gaus(0.,bot_gain*bot_spread); 
+  }
+  
+  // arXiv: 1905.06032 SiPM + Scint non linearity
+  // https://ieeexplore.ieee.org/document/5874113 resolution
+  // deltaE/E = a E^-b
+  // <Q> = gain/c * ( 1 - exp(-cE))
+
+  double err_scale = 0.2; 
+  
+  string gname[2] = {"MC_BV_TREE_cosmics_ecomug_hsphere_1M_B1T_set999.root","DATA_BV_TREE_cosmics_run_output07947.root"};
+  bool isMC[2] = {true,false};
+  
+   
+  TH1F* hatop[2];
+  hatop[0] = new TH1F("hatop0","hatop0",50,0,1); 
+  hatop[1] = new TH1F("hatop1","hatop1",50,0,1);
+  hatop[1]->SetLineColor(kRed); 
+
+  TH1F* habot[2];
+  habot[0] = new TH1F("habot0","habot0",50,0,1);
+  habot[1] = new TH1F("habot1","habot1",50,0,1);
+  habot[1]->SetLineColor(kRed); 
+
+  TH1F* hn[2];
+  hn[0] = new TH1F("hn0","hn0",12,1,13);
+  hn[1] = new TH1F("hn1","hn1",12,1,13);
+  hn[1]->SetLineColor(kRed); 
+
+  TH1F* hlog[2];
+  hlog[0] = new TH1F("hlog0","hlog0",40,-4,4);
+  hlog[1] = new TH1F("hlog1","hlog1",40,-4,4);
+  hlog[1]->SetLineColor(kRed); 
+  
+  
+
+  for (int num=0; num<2; num++){
+
+    simple test(gname[num].c_str(),0);
+
+    if (isMC[num])
+      test.SetMLUTable("./mlu_pbars_bottom_trap.dat");
+
+  for (int i=0; i<test.treeMCBV->GetEntries(); i++){
+    test.GetEntry(i);
+    
+    std::vector<double> cal_atop;
+    std::vector<double> cal_abot;
+    std::vector<int> cal_id;
+    std::vector<int> mlu_id;
+
+    for (int j=0; j<test.bars_id->size(); j++){            
+
+      if (isMC[num]) {
+	double edep =  test.bars_edep->at(j);
+	double z =  test.bars_z->at(j);
+	
+	double atop =  edep*TMath::Exp( -(zmax-z)/lambda ); 
+	double abot =  edep*TMath::Exp( -(z-zmin)/lambda ); 
+
+	// calibrate amplitudes
+	//double Eres_top = deltaE_a * TMath::Exp(-deltaE_b*TMath::Log(atop));
+	//double Eres_bot = deltaE_a * TMath::Exp(-deltaE_b*TMath::Log(abot));
+
+	double Eres_top = deltaE_a / TMath::Sqrt(atop);
+	double Eres_bot = deltaE_a / TMath::Sqrt(abot);
+
+	// include non-linearity and resolution 
+	atop = gain_top[ test.bars_id->at(j) ] / gain_c * ( 1 - TMath::Exp(-gain_c*atop)) * gRandom->Gaus(1.,Eres_top); 
+	abot = gain_bot[ test.bars_id->at(j) ] / gain_c * ( 1 - TMath::Exp(-gain_c*abot)) * gRandom->Gaus(1.,Eres_bot); 
+
+	if (atop > thres*mlu_scale && abot > thres*mlu_scale){
+	  mlu_id.push_back(test.bars_id->at(j)); 
+	}
+	if (atop > thres && abot > thres){
+	  cal_atop.push_back(atop); 
+	  cal_abot.push_back(abot);
+	  cal_id.push_back(test.bars_id->at(j)); 
+	}
+      }
+      else {
+	double atop = test.bars_atop->at(j);
+	double abot = test.bars_abot->at(j);
+
+	cal_atop.push_back(atop); 
+	cal_abot.push_back(abot);
+	cal_id.push_back(test.bars_id->at(j));
+      }
+
+    }
+
+    if (isMC[num]){
+      // apply mlu      
+      Bool_t BVMLU[16];
+      for(unsigned int k=0; k<16; k++) {BVMLU[k] = false;}
+      
+      for(unsigned int k=0; k<mlu_id.size(); k++) {
+	unsigned int pad = (int)(mlu_id.at(k)/4);
+	BVMLU[pad] = 1;
+      }
+      uint16_t pattern = test.bool_array_to_uint16(BVMLU,16);
+      if (!test.mlu(pattern)) continue;
+    }
+	
+    for (int j=0; j<cal_id.size(); j++){            
+      hatop[num]->Fill(cal_atop.at(j)); 
+      habot[num]->Fill(cal_abot.at(j)); 
+      hlog[num]->Fill(TMath::Log(cal_atop.at(j)/cal_abot.at(j)));
+    }
+    hn[num]->Fill(cal_id.size()); 
+
+  }
+  }
+
+  TCanvas c;
+  c.Divide(2,2); 
+
+  c.cd(1); 
+  hatop[1]->DrawNormalized(); 
+  hatop[0]->DrawNormalized("same"); 
+  
+  c.cd(2); 
+  habot[1]->DrawNormalized(); 
+  habot[0]->DrawNormalized("same"); 
+  
+  c.cd(3); 
+  hn[1]->DrawNormalized(); 
+  hn[0]->DrawNormalized("same"); 
+  
+  c.cd(4); 
+  hlog[1]->DrawNormalized(); 
+  hlog[0]->DrawNormalized("same"); 
+
+  c.SaveAs("status.png"); 
+
+  TH1F* href;
+  TH1F* htest;
+
+  href = hn[1];
+  htest = hn[0];
+  href->Scale(1./href->GetSumOfWeights()); 
+  htest->Scale(1./htest->GetSumOfWeights());
+  double err = err_scale / href->GetNbinsX(); 
+  double pseudochi2=0; 
+  for (int i=0; i<href->GetNbinsX()+2; i++){
+    double res = href->GetBinContent(i)-htest->GetBinContent(i); 
+    pseudochi2+= ( res*res/err/err )/ href->GetNbinsX(); 
+  }
+  //  cout << pseudochi2/href->GetNbinsX() << endl; 
+
+    
+  href = hlog[1];
+  htest = hlog[0];
+  href->Scale(1./href->GetSumOfWeights()); 
+  htest->Scale(1./htest->GetSumOfWeights());
+  err = err_scale / href->GetNbinsX(); 
+  //  pseudochi2=0; 
+  for (int i=0; i<href->GetNbinsX()+2; i++){
+    double res = href->GetBinContent(i)-htest->GetBinContent(i); 
+    pseudochi2+= ( res*res/err/err )/ href->GetNbinsX(); 
+  }
+  //  cout << pseudochi2/ href->GetNbinsX()<< endl; 
+
+  
+  href = hatop[1];
+  htest = hatop[0];
+  href->Scale(1./href->GetSumOfWeights()); 
+  htest->Scale(1./htest->GetSumOfWeights());
+  err = err_scale / href->GetNbinsX(); 
+  //  pseudochi2=0; 
+  for (int i=0; i<href->GetNbinsX()+2; i++){
+    double res = href->GetBinContent(i)-htest->GetBinContent(i); 
+    pseudochi2+= ( res*res/err/err )/ href->GetNbinsX(); 
+  }
+  //  cout << pseudochi2/href->GetNbinsX() << endl; 
+
+  
+  href = habot[1];
+  htest = habot[0];
+  href->Scale(1./href->GetSumOfWeights()); 
+  htest->Scale(1./htest->GetSumOfWeights());
+  err = err_scale / href->GetNbinsX(); 
+  //  pseudochi2=0; 
+  for (int i=0; i<href->GetNbinsX()+2; i++){
+    double res = href->GetBinContent(i)-htest->GetBinContent(i); 
+    pseudochi2+= ( res*res/err/err )/ href->GetNbinsX(); 
+  }
+  //  cout << pseudochi2/href->GetNbinsX() << endl; 
+
+  return pseudochi2; 
+  
+}
+
+
