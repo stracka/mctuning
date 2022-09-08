@@ -1,15 +1,15 @@
 #include "simple.C"
 
-double macro_mlu(double mlu_scale = 0.5,
-                 double top_gain = 0.1944,
-                 double top_spread = 0.2,
-                 double bot_gain = 0.1944,
-                 double bot_spread = 0.2,
-                 double deltaE_a = 0.07,
-                 double gain_c = 0.1,
-                 double lambda = 1.3,
-                 double c_Ej = 299792458 / 1.93,
-                 double t_smearing = 500e-12)
+double macro_mlu_1bar(double mlu_scale = 0.5,
+                      double top_gain = 0.1944,
+                      double top_spread = 0.2,
+                      double bot_gain = 0.1944,
+                      double bot_spread = 0.2,
+                      double deltaE_a = 0.07,
+                      double gain_c = 0.1,
+                      double lambda = 1.3,
+                      double c_Ej = 299792458 / 1.93,
+                      double t_smearing = 500e-12)
 {
 
   double thres = 0.0366;
@@ -79,6 +79,7 @@ double macro_mlu(double mlu_scale = 0.5,
       std::vector<int> cal_id;
       std::vector<int> mlu_id;
 
+      Int_t NBars_MC = 0;
       for (int j = 0; j < test.bars_id->size(); j++)
       {
 
@@ -87,13 +88,13 @@ double macro_mlu(double mlu_scale = 0.5,
           double edep = test.bars_edep->at(j);
           double z = test.bars_z->at(j);
 
-          double atop = edep * TMath::Exp(-(zmax - z)/lambda);
-          double abot = edep * TMath::Exp(-(z - zmin)/lambda);
+          double atop = edep * TMath::Exp(-(zmax - z) / lambda);
+          double abot = edep * TMath::Exp(-(z - zmin) / lambda);
 
           double thit = test.bars_t->at(j);
-          double ttop = thit + (zmax - z) / c_Ej + gRandom->Gaus(0, t_smearing); //preparare tuning barre saparate
+          double ttop = thit + (zmax - z) / c_Ej + gRandom->Gaus(0, t_smearing); // preparare tuning barre saparate
           double tbot = thit + (z - zmin) / c_Ej + gRandom->Gaus(0, t_smearing);
-          double ttop_tbot = ttop-tbot;
+          double ttop_tbot = ttop - tbot;
 
           // calibrate amplitudes
           // double Eres_top = deltaE_a * TMath::Exp(-deltaE_b*TMath::Log(atop));
@@ -115,8 +116,10 @@ double macro_mlu(double mlu_scale = 0.5,
             cal_atop.push_back(atop);
             cal_abot.push_back(abot);
             cal_ttop_tbot.push_back(ttop_tbot);
-            
+
             cal_id.push_back(test.bars_id->at(j));
+
+            NBars_MC++;
           }
         }
         else
@@ -125,13 +128,13 @@ double macro_mlu(double mlu_scale = 0.5,
           double abot = test.bars_abot->at(j);
 
           double ttop = test.bars_ttop->at(j);
-          double tbot = test.bars_tbot->at(j);          
-          double ttop_tbot = ttop-tbot;
+          double tbot = test.bars_tbot->at(j);
+          double ttop_tbot = ttop - tbot;
 
           cal_atop.push_back(atop);
           cal_abot.push_back(abot);
           cal_ttop_tbot.push_back(ttop_tbot);
-          
+
           cal_id.push_back(test.bars_id->at(j));
         }
       }
@@ -159,13 +162,15 @@ double macro_mlu(double mlu_scale = 0.5,
       {
         hatop[num]->Fill(cal_atop.at(j));
         habot[num]->Fill(cal_abot.at(j));
-        
-        hlog[num]->Fill(TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
+
+        /*if ((isMC[num] && NBars_MC == 1) ||*/ if(cal_id.size() == 1)
+          hlog[num]->Fill(TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
       }
 
       for (int j = 0; j < cal_ttop_tbot.size(); j++)
       {
-        httop_tbot[num]->Fill(cal_ttop_tbot.at(j));
+        /*if ((isMC[num] && NBars_MC == 1) ||*/ if(cal_id.size() == 1)
+          httop_tbot[num]->Fill(cal_ttop_tbot.at(j));
       }
 
       hn[num]->Fill(cal_id.size());
