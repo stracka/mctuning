@@ -42,15 +42,17 @@ def objective(trial):
         "deltaE_a":[0.001,0.50,True],        
         "gain_c":[0.001,2.5,True],
         "lambda":[0.7,2,False],
+        "c_Ej":[0.5e8,2e8,False],
+        "t_smearing":[0.1e-9,5e-9,True]
     }
 
     params=''
     for key in mydict:
-        val = trial.suggest_float(key,mydict[key][0],mydict[key][1],log=mydict[key][2])
+        val = trial.suggest_float(key,mydict[key][0],mydict[key][1],log=mydict[key][2]) #log se è true
         params += str(val) + ','
     params=params[:-1]
 
-    command = "root -l -b -q macro.C+\("+ params +"\) | grep double | awk '{print $2}' " 
+    command = "root -l -b -q macro_mlu.C+\("+ params +"\) | grep double | awk '{print $2}' " 
 
     print(command)
     out = subprocess.run(command,shell=True,capture_output=True)
@@ -60,7 +62,7 @@ def objective(trial):
 
 
 
-def optuna_mc(n_trials=100, timeout=600): 
+def optuna_mc(n_trials=1000, timeout=2800): #quando fermare ottimizzazione
     """
     https://arxiv.org/pdf/1907.10902.pdf
     https://optuna.org/
@@ -69,6 +71,8 @@ def optuna_mc(n_trials=100, timeout=600):
     SEED = 4005    
 
     logger.info("OPTUNA")
+
+    print("hello")
     
             
     study = optuna.create_study(
@@ -78,10 +82,23 @@ def optuna_mc(n_trials=100, timeout=600):
     )
     study.optimize(objective, n_trials=n_trials, timeout=timeout)
         
+    #######################################################
+
+    print("\n\nThis is the end!!!!!\n\n")
+
     logger.info(study.best_trial)
     logger.info(study.best_value)
     logger.info(study.best_params)
     
+    bestpar = study.best_params.values()
+    bestpar_str = str(bestpar)[13:-2].replace(" ","")
+    
+    print("\n")
+    command = "root -l -b -q macro_mlu.C+\("+ bestpar_str +"\) | grep double | awk '{print $2}' " 
+    print(command)
+    subprocess.run(command,shell=True,capture_output=True)
+    print("\n")
+
     return study.best_trial
 
 
