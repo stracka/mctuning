@@ -7,15 +7,15 @@
 double macro_mlu_bar_1_2(int count, ...)
 {
 
-  if (count != 7 * NBARS + 1)
+  if (count != 7 * NBARS)
   {
-    cout << "Wrong number of Args: " << count << " instead of " << 7 * NBARS + 1 << endl;
+    cout << "Wrong number of Args: " << count << " instead of " << 7 * NBARS  << endl;
     return 0.0;
   }
 
   double mlu_scale =0.5;
-  double c_Ej;
-  double t_smearing = 500e-12;
+  double c_Ej = 158559135.35984075;
+  double t_smearing = 800e-12;
   double top_gain[NBARS];
   double top_spread[NBARS];
   double bot_gain[NBARS];
@@ -30,25 +30,25 @@ double macro_mlu_bar_1_2(int count, ...)
   {
     // if (i == 0)
     //   mlu_scale = va_arg(args, double);
-    if (i == 0)
-      c_Ej = va_arg(args, double);
+    // if (i == 0)
+    //   c_Ej = va_arg(args, double);
     // if (i == 1)
     //   t_smearing = va_arg(args, double);
 
-    if ((i - 1) % 7 == 0)
-      top_gain[(i - 1) / 7] = va_arg(args, double);
-    if ((i - 1) % 7 == 1)
-      top_spread[(i - 1) / 7] = va_arg(args, double);
-    if ((i - 1) % 7 == 2)
-      bot_gain[(i - 1) / 7] = va_arg(args, double);
-    if ((i - 1) % 7 == 3)
-      bot_spread[(i - 1) / 7] = va_arg(args, double);
-    if ((i - 1) % 7 == 4)
-      deltaE_a[(i - 1) / 7] = va_arg(args, double);
-    if ((i - 1) % 7 == 5)
-      gain_c[(i - 1) / 7] = va_arg(args, double);
-    if ((i - 1) % 7 == 6)
-      lambda[(i - 1) / 7] = va_arg(args, double);
+    if (i  % 7 == 0)
+      top_gain[i  / 7] = va_arg(args, double);
+    if (i  % 7 == 1)
+      top_spread[i  / 7] = va_arg(args, double);
+    if (i  % 7 == 2)
+      bot_gain[i  / 7] = va_arg(args, double);
+    if (i  % 7 == 3)
+      bot_spread[i  / 7] = va_arg(args, double);
+    if (i  % 7 == 4)
+      deltaE_a[i  / 7] = va_arg(args, double);
+    if (i  % 7 == 5)
+      gain_c[i  / 7] = va_arg(args, double);
+    if (i  % 7 == 6)
+      lambda[i  / 7] = va_arg(args, double);
   }
   va_end(args);
 

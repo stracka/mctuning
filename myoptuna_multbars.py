@@ -43,11 +43,11 @@ def objective(trial):
         "lambda":[0.7,2,False]
     }
     
-    mydict = {
+    mydict = dict()#{
         #"mlu_scale":[0.,1.,False],
-        "c_Ej":[0.5e8,2e8,False]
+        #"c_Ej":[0.5e8,2e8,False]
         #"t_smearing":[0.1e-9,3e-9,True]
-        }
+        #}
 
     npar=2
     for i in range(0,npar):
@@ -66,7 +66,7 @@ def objective(trial):
         params += str(val) + ','
     params=params[:-1]
 
-    nargs = str(7*npar+1)
+    nargs = str(7*npar)
 
     command = "root -l -b -q macro_mlu_bar_1_2.C+\("+nargs+","+ params +"\) | grep double | awk '{print $2}' " #vedi come scrivere stringe lunghe x tuning a 64 barre
     #runnare più volte individualmente per ogni barra e per ogni parametro
@@ -117,7 +117,7 @@ def optuna_mc(n_trials=100, timeout=600):#(n_trials=500, timeout=1800): #quando 
     bestpar_str = str(bestpar)[13:-2].replace(" ","")
     
     npar=2
-    nargs = str(7*npar+1)
+    nargs = str(7*npar)
 
     print("\n")
     command = "root -l -b -q macro_mlu_bar_1_2.C+\("+nargs+","+ bestpar_str +"\) | grep double | awk '{print $2}' " 
