@@ -1,4 +1,5 @@
 #include "simple.C"
+#include "TLegend.h"
 
 double macro_mlu(double mlu_scale = 0.5,
                  double top_gain = 0.1944,
@@ -38,27 +39,60 @@ double macro_mlu(double mlu_scale = 0.5,
   TH1F *hatop[2];
   hatop[0] = new TH1F("hatop0", "hatop0", 50, 0, 1);
   hatop[1] = new TH1F("hatop1", "hatop1", 50, 0, 1);
+  hatop[1]->SetTitle("Amplitude top ADCs");
+  hatop[1]->SetTitleSize(0.07262164);
+  hatop[1]->GetXaxis()->SetTitle("A_{top} (V)");
+  hatop[1]->GetXaxis()->SetTitleSize(0.045);
   hatop[1]->SetLineColor(kRed);
+  hatop[0]->SetLineWidth(2);
+  hatop[1]->SetLineWidth(2);
 
   TH1F *habot[2];
   habot[0] = new TH1F("habot0", "habot0", 50, 0, 1);
   habot[1] = new TH1F("habot1", "habot1", 50, 0, 1);
+  habot[1]->SetTitle("Amplitude bot ADCs");
+  habot[1]->SetTitleSize(0.07262164);
+  habot[1]->GetXaxis()->SetTitle("A_{bot} (V)");
+  habot[1]->GetXaxis()->SetTitleSize(0.045);
   habot[1]->SetLineColor(kRed);
+  habot[0]->SetLineWidth(2);
+  habot[1]->SetLineWidth(2);
 
   TH1F *httop_tbot[2];
   httop_tbot[0] = new TH1F("httop_tbot0", "httop_tbot0", 50, -3e-8, 3e-8);
   httop_tbot[1] = new TH1F("httop_tbot1", "httop_tbot1", 50, -3e-8, 3e-8);
+  httop_tbot[1]->SetTitle("time TDCs top - TDCs bot");
+  httop_tbot[1]->SetTitleSize(0.07262164);
+  httop_tbot[1]->GetXaxis()->SetTitle("t_{top}-t_{bot} (s)");
+  httop_tbot[1]->GetXaxis()->SetTitleSize(0.045);
   httop_tbot[1]->SetLineColor(kRed);
+  httop_tbot[0]->SetLineWidth(2);
+  httop_tbot[1]->SetLineWidth(2);
+
 
   TH1F *hn[2];
   hn[0] = new TH1F("hn0", "hn0", 12, 1, 13);
   hn[1] = new TH1F("hn1", "hn1", 12, 1, 13);
+  hn[1]->SetTitle("Event multiplicity");
+  hn[1]->SetTitleSize(0.07262164);
+  hn[1]->GetXaxis()->SetTitle("#Bars hit");
+  hn[1]->GetXaxis()->SetTitleSize(0.045);
   hn[1]->SetLineColor(kRed);
+  hn[0]->SetLineWidth(2);
+  hn[1]->SetLineWidth(2);
+
 
   TH1F *hlog[2];
   hlog[0] = new TH1F("hlog0", "hlog0", 40, -4, 4);
   hlog[1] = new TH1F("hlog1", "hlog1", 40, -4, 4);
+  hlog[1]->SetTitle("log of bot/top Amplitudes");
+  hlog[1]->SetTitleSize(0.07262164);
+  hlog[1]->GetXaxis()->SetTitle("log(A_{bot}/A_{top})");
+  hlog[1]->GetXaxis()->SetTitleSize(0.045);
   hlog[1]->SetLineColor(kRed);
+  hlog[0]->SetLineWidth(2);
+  hlog[1]->SetLineWidth(2);
+
 
   for (int num = 0; num < 2; num++)
   {
@@ -172,28 +206,40 @@ double macro_mlu(double mlu_scale = 0.5,
     }
   }
 
-  TCanvas c;
+  TLegend *legend = new TLegend(0.6745438,0.7575799,0.9372471,0.9300563,NULL,"brNDC");//(0.1,0.7,0.48,0.9);
+  legend->SetTextSize(0.04668534);
+  legend->AddEntry(hatop[1],"Data","l");
+  legend->AddEntry(hatop[0],"Monte Carlo","l");
+  
+  gStyle->SetOptStat(0);
+
+  TCanvas c("c","c",1800,1200);
   c.Divide(3, 2);
 
   c.cd(1);
   hatop[1]->DrawNormalized();
   hatop[0]->DrawNormalized("same");
+  legend->Draw();
 
   c.cd(2);
   habot[1]->DrawNormalized();
   habot[0]->DrawNormalized("same");
+  legend->Draw();
 
   c.cd(3);
   hn[1]->DrawNormalized();
   hn[0]->DrawNormalized("same");
+  legend->Draw();
 
   c.cd(4);
   hlog[1]->DrawNormalized();
   hlog[0]->DrawNormalized("same");
+  legend->Draw();
 
   c.cd(5);
   httop_tbot[1]->DrawNormalized();
   httop_tbot[0]->DrawNormalized("same");
+  legend->Draw();
 
   c.SaveAs("status.png");
 

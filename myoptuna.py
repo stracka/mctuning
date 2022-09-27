@@ -43,7 +43,7 @@ def objective(trial):
         "gain_c":[0.001,2.5,True],
         "lambda":[0.7,2,False],
         "c_Ej":[0.5e8,2e8,False],
-        "t_smearing":[0.1e-9,3e-9,True]
+        "t_smearing":[300e-12,3e-9,True]
     }
 
     params=''
@@ -52,7 +52,7 @@ def objective(trial):
         params += str(val) + ','
     params=params[:-1]
 
-    command = "root -l -b -q macro_mlu_1bar.C+\("+ params +"\) | grep double | awk '{print $2}' " 
+    command = "root -l -b -q macro_mlu.C+\("+ params +"\) | grep double | awk '{print $2}' " 
 
     print(command)
     out = subprocess.run(command,shell=True,capture_output=True)
@@ -62,7 +62,7 @@ def objective(trial):
 
 
 
-def optuna_mc(n_trials=500, timeout=1800): #quando fermare ottimizzazione
+def optuna_mc(n_trials=100, timeout=600): #quando fermare ottimizzazione
     """
     https://arxiv.org/pdf/1907.10902.pdf
     https://optuna.org/
@@ -94,7 +94,7 @@ def optuna_mc(n_trials=500, timeout=1800): #quando fermare ottimizzazione
     bestpar_str = str(bestpar)[13:-2].replace(" ","")
     
     print("\n")
-    command = "root -l -b -q macro_mlu_1bar.C+\("+ bestpar_str +"\) | grep double | awk '{print $2}' " 
+    command = "root -l -b -q macro_mlu.C+\("+ bestpar_str +"\) | grep double | awk '{print $2}' " 
     print(command)
     subprocess.run(command,shell=True,capture_output=True)
     print("\n")
