@@ -13,7 +13,8 @@ double macro_mlu(double mlu_scale = 0.5,
                  double t_smearing = 500e-12)
 {
 
-  double thres = 0.0366;
+  double thres = 300.0;//800; 0.0366;
+  thres/=TMath::Power(2.0,14);
   double zmin = -1.3;
   double zmax = 1.3;
 
@@ -33,7 +34,7 @@ double macro_mlu(double mlu_scale = 0.5,
 
   double err_scale = 0.2;
 
-  string gname[2] = {"MC_BV_TREE_cosmics_ecomug_hsphere_1M_B1T_set999.root", "DATA_BV_TREE_cosmics_run_output07947.root"};
+  string gname[2] = {"MC_BV_TREE_cosmics_ecomug_hsphere_1M_B1T_set999.root", "DATA_BV_TREE_cosmics_runs_8925_8926_low_sw_thrs.root"};//"DATA_BV_TREE_cosmics_run_output07947.root"};
   bool isMC[2] = {true, false};
 
   TH1F *hatop[2];

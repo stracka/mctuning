@@ -71,7 +71,7 @@ double macro_1par_1bar()
   //   cout<< lambda[i] <<endl;
   // }
 
-  const double thres = 0.0366;
+  const double thres = 800/TMath::Power(2,14);//0.0366;
   const double zmin = -1.3;
   const double zmax = 1.3;
 

@@ -1,9 +1,9 @@
 #include "simple.C"
 
 double macro_mlu_1bar(double mlu_scale = 0.5,
-                      double top_gain = 0.1944,
+                      double top_gain = 0.2,
                       double top_spread = 0.2,
-                      double bot_gain = 0.1944,
+                      double bot_gain = 0.2,
                       double bot_spread = 0.2,
                       double deltaE_a = 0.07,
                       double gain_c = 0.1,
@@ -12,7 +12,7 @@ double macro_mlu_1bar(double mlu_scale = 0.5,
                       double t_smearing = 500e-12)
 {
 
-  double thres = 0.0366;
+  double thres = 800/TMath::Power(2,14);//0.0366;
   double zmin = -1.3;
   double zmax = 1.3;
 
