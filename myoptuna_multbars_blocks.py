@@ -126,6 +126,9 @@ def optuna_mc(n_trials=100, timeout=600):#(n_trials=500, timeout=1800): #quando 
     print(command)
     subprocess.run(command,shell=True,capture_output=True)
     print("\n")
+
+    fig = optuna.visualization.plot_intermediate_values(study) #non funzia
+    fig.show()
     return study.best_trial
 
 

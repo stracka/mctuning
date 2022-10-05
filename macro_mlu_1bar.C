@@ -9,10 +9,27 @@ double macro_mlu_1bar(double mlu_scale = 0.5,
                       double gain_c = 0.1,
                       double lambda = 1.3,
                       double c_Ej = 299792458 / 1.93,
-                      double t_smearing = 500e-12)
+                      double t_smearing = 500e-12,
+                      int filenumber = 0)
 {
 
-  double thres = 800/TMath::Power(2,14);//0.0366;
+  TString filename;
+
+  if(filenumber == 0) filename = "DATA_BV_TREE_cosmics_run_output07947_old_thrs800.root";
+  if(filenumber == 1) filename = "DATA_BV_TREE_cosmics_run_output07947_thrs800.root";
+  if(filenumber == 2) filename = "DATA_BV_TREE_cosmics_run_output08768_thrs800.root";
+  if(filenumber == 3) filename = "DATA_BV_TREE_cosmics_run_output08926_thrs800.root";
+  if(filenumber == 4) filename = "DATA_BV_TREE_cosmics_run_output08926_std_sw_thrs800.root";
+  if(filenumber == 5) filename = "DATA_BV_TREE_cosmics_run_output08926_low_sw_thrs300.root";
+  if(filenumber == 6) filename = "DATA_BV_TREE_cosmics_run_output08925_low_sw_thrs300.root";
+  if(filenumber == 7) filename = "DATA_BV_TREE_cosmics_runs_8925_8926_low_sw_thrs300.root";
+
+  int pointIndex = filename.Index(".");
+  int thrsindex = filename.Index("thrs");
+  TString Sthreshold = (TString)(filename(thrsindex+4,pointIndex-(thrsindex+4)));
+  double threshold = Sthreshold.Atof();
+
+  double thres = threshold/TMath::Power(2,14);//0.0366;
   double zmin = -1.3;
   double zmax = 1.3;
 
@@ -32,7 +49,7 @@ double macro_mlu_1bar(double mlu_scale = 0.5,
 
   double err_scale = 0.2;
 
-  string gname[2] = {"MC_BV_TREE_cosmics_ecomug_hsphere_1M_B1T_set999.root", "DATA_BV_TREE_cosmics_run_output07947.root"};
+  string gname[2] = {"MC_BV_TREE_cosmics_ecomug_hsphere_1M_B1T_set999.root", (string)filename};
   bool isMC[2] = {true, false};
 
   TH1F *hatop[2];
@@ -59,6 +76,16 @@ double macro_mlu_1bar(double mlu_scale = 0.5,
   hlog[0] = new TH1F("hlog0", "hlog0", 40, -4, 4);
   hlog[1] = new TH1F("hlog1", "hlog1", 40, -4, 4);
   hlog[1]->SetLineColor(kRed);
+
+  TH2F *hlog_vs_ttop_tbot[2];
+  hlog_vs_ttop_tbot[0] = new TH2F("h0log_vs_ttop_tbot", "h0log_vs_ttop_tbot", 100, -3e-8, 3e-8, 100, -4, 4);
+  hlog_vs_ttop_tbot[1] = new TH2F("h1log_vs_ttop_tbot", "h1log_vs_ttop_tbot", 100, -3e-8, 3e-8, 100, -4, 4);
+  hlog_vs_ttop_tbot[1]->SetLineColor(kRed);
+
+  TH2F *hratio_vs_ttop_tbot[2];
+  hratio_vs_ttop_tbot[0] = new TH2F("h0ratio_vs_ttop_tbot", "h0ratio_vs_ttop_tbot", 100, -3e-8, 3e-8, 100, 0, 25);
+  hratio_vs_ttop_tbot[1] = new TH2F("h1ratio_vs_ttop_tbot", "h1ratio_vs_ttop_tbot", 100, -3e-8, 3e-8, 100, 0, 25);
+  hratio_vs_ttop_tbot[1]->SetLineColor(kRed);
 
   for (int num = 0; num < 2; num++)
   {
@@ -163,8 +190,13 @@ double macro_mlu_1bar(double mlu_scale = 0.5,
         hatop[num]->Fill(cal_atop.at(j));
         habot[num]->Fill(cal_abot.at(j));
 
-        /*if ((isMC[num] && NBars_MC == 1) ||*/ if(cal_id.size() == 1)
+        /*if ((isMC[num] && NBars_MC == 1) ||*/ 
+        if(cal_id.size() == 1)
+        {
           hlog[num]->Fill(TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
+          hlog_vs_ttop_tbot[num]->Fill(cal_ttop_tbot.at(j), TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
+          hratio_vs_ttop_tbot[num]->Fill( cal_ttop_tbot.at(j), cal_abot.at(j) / cal_atop.at(j));
+        }
       }
 
       for (int j = 0; j < cal_ttop_tbot.size(); j++)
@@ -201,6 +233,20 @@ double macro_mlu_1bar(double mlu_scale = 0.5,
   httop_tbot[0]->DrawNormalized("same");
 
   c.SaveAs("status.png");
+
+  TCanvas c2d("c2d","c2d",1000,1000);
+  c2d.Divide(2,2);
+  c2d.cd(1);
+  hlog_vs_ttop_tbot[1]->Draw("colz");
+  c2d.cd(2);
+  hlog_vs_ttop_tbot[0]->Draw("colz");
+  c2d.cd(3);
+  hratio_vs_ttop_tbot[1]->Draw("colz");
+  c2d.cd(4);
+  hratio_vs_ttop_tbot[0]->Draw("colz");
+
+  c2d.SaveAs("status2d.png");
+
 
   TH1F *href;
   TH1F *htest;

@@ -62,7 +62,7 @@ def objective0(trial):
         file.write(f"{val}\n")
     file.close()
     
-    command = "root -l -b -q macro_1bar.C+\(0\) | grep double | awk '{print $2}' "    
+    command = "root -l -b -q macro_1bar.C+\(0,1\) | grep double | awk '{print $2}' "    
     print(command)
     out = subprocess.run(command,shell=True,capture_output=True) #per  ogni command
     x = float(out.stdout.decode())
@@ -102,7 +102,7 @@ def objective1(trial):
         file.write(f"{val}\n")
     file.close()
     
-    command = "root -l -b -q macro_1bar.C+\(1\) | grep double | awk '{print $2}' "    
+    command = "root -l -b -q macro_1bar.C+\(1,1\) | grep double | awk '{print $2}' "    
     print(command)
     out = subprocess.run(command,shell=True,capture_output=True) #per  ogni command
     x = float(out.stdout.decode())
@@ -172,13 +172,13 @@ def optuna_mc(n_trials=100, timeout=600):#(n_trials=500, timeout=1800): #quando 
     file.close()
 
     print("\n")
-    command = "root -l -b -q macro_1bar.C+\(0\) | grep double | awk '{print $2}' " 
+    command = "root -l -b -q macro_1bar.C+\(0,1\) | grep double | awk '{print $2}' " 
     print(command)
     subprocess.run(command,shell=True,capture_output=True)
     print("\n")
 
     print("\n")
-    command = "root -l -b -q macro_1bar.C+\(1\) | grep double | awk '{print $2}' " 
+    command = "root -l -b -q macro_1bar.C+\(1,1\) | grep double | awk '{print $2}' " 
     print(command)
     subprocess.run(command,shell=True,capture_output=True)
     print("\n")

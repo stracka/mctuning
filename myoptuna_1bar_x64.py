@@ -36,13 +36,13 @@ class BarObj:
     def __init__(self, barn):
         self.BarNumber = barn
 
-    def objective(self,trial):
+    def objective(self,trial): #fai solo per due barre (e per eventi con 1 barra e con 2 barre) e poi aggiungi parametri tdc
         mydict_temp = {        
             "top_gain":[0.1,1.5,False],        
-            "top_spread":[0.001,0.3,True],        
+            "top_spread":[0.001,0.3,True],     #togliere x barre singole   
             "bot_gain":[0.1,1.5,False],
-            "bot_spread":[0.001,0.3,True],        
-            "deltaE_a":[0.001,0.50,True],        
+            "bot_spread":[0.001,0.3,True],     #togliere x barre singole   
+            "deltaE_a":[0.001,0.50,True],      # aggiungere 1 x top e 1 x bot-> rivedi parametrizzazione  
             "gain_c":[0.001,2.5,True],
             "lambda":[0.7,2,False]
         }
@@ -65,7 +65,7 @@ class BarObj:
             file.write(f"{val}\n")
         file.close()
 
-        command = "root -l -b -q macro_1bar.C+\("+str(self.BarNumber) +"\) | grep double | awk '{print $2}' "    
+        command = "root -l -b -q macro_1bar.C+\("+str(self.BarNumber) +",1\) | grep double | awk '{print $2}' "    
         print(command)
         out = subprocess.run(command,shell=True,capture_output=True)
         x = float(out.stdout.decode())
@@ -116,7 +116,7 @@ def optuna_mc(n_trials=100, timeout=600):#(n_trials=500, timeout=1800): #quando 
         file.close()
 
         print("\n")
-        command = "root -l -b -q macro_1bar.C+\("+str(i)+"\) | grep double | awk '{print $2}' " 
+        command = "root -l -b -q macro_1bar.C+\("+str(i)+",1\) | grep double | awk '{print $2}' " 
         print(command)
         subprocess.run(command,shell=True,capture_output=True)
         print("\n")

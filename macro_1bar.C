@@ -7,9 +7,25 @@ using namespace std;
 
 #define NBARS 64
 
-double macro_1bar(int barnumber=0)
+double macro_1bar(int barnumber=0, int filenumber = 0)
 {
+  TString filename;
 
+  if(filenumber == 0) filename = "DATA_BV_TREE_cosmics_run_output07947_old_thrs800.root";
+  if(filenumber == 1) filename = "DATA_BV_TREE_cosmics_run_output07947_thrs800.root";
+  if(filenumber == 2) filename = "DATA_BV_TREE_cosmics_run_output08768_thrs800.root";
+  if(filenumber == 3) filename = "DATA_BV_TREE_cosmics_run_output08926_thrs800.root";
+  if(filenumber == 4) filename = "DATA_BV_TREE_cosmics_run_output08926_std_sw_thrs800.root";
+  if(filenumber == 5) filename = "DATA_BV_TREE_cosmics_run_output08926_low_sw_thrs300.root";
+  if(filenumber == 6) filename = "DATA_BV_TREE_cosmics_run_output08925_low_sw_thrs300.root";
+  if(filenumber == 7) filename = "DATA_BV_TREE_cosmics_runs_8925_8926_low_sw_thrs300.root";
+
+  int pointIndex = filename.Index(".");
+  int thrsindex = filename.Index("thrs");
+  TString Sthreshold = (TString)(filename(thrsindex+4,pointIndex-(thrsindex+4)));
+  double threshold = Sthreshold.Atof();
+
+  gStyle->SetOptStat(0);
 
   double mlu_scale =0.5;
   double c_Ej = 158559135.35984075;
@@ -71,7 +87,7 @@ double macro_1bar(int barnumber=0)
   //   cout<< lambda[i] <<endl;
   // }
 
-  const double thres = 800/TMath::Power(2,14);//0.0366;
+  const double thres = threshold/TMath::Power(2,14);//0.0366;
   const double zmin = -1.3;
   const double zmax = 1.3;
 
@@ -91,7 +107,7 @@ double macro_1bar(int barnumber=0)
 
   double err_scale = 0.2;
 
-  string gname[2] = {"MC_BV_TREE_cosmics_ecomug_hsphere_1M_B1T_set999.root", "DATA_BV_TREE_cosmics_run_output07947.root"};
+  string gname[2] = {"MC_BV_TREE_cosmics_ecomug_hsphere_1M_B1T_set999.root", (string)filename};
   bool isMC[2] = {true, false};
 
   TH1F *hatop[2][NBARS]; // first index 0->MC, 1->Data; second index bar number
@@ -120,6 +136,22 @@ double macro_1bar(int barnumber=0)
     httop_tbot[1][i]->SetLineColor(kRed);
   }
 
+  TH2F *hlog_vs_ttop_tbot[2][NBARS];
+  for (int i = 0; i < NBARS; i++)
+  {
+    hlog_vs_ttop_tbot[0][i] = new TH2F(Form("h0log_vs_ttop_tbot%d", i), Form("h0log_vs_ttop_tbot%d", i), 100, -3e-8, 3e-8, 100, -4, 4);
+    hlog_vs_ttop_tbot[1][i] = new TH2F(Form("h1log_vs_ttop_tbot%d", i), Form("h1log_vs_ttop_tbot%d", i), 100, -3e-8, 3e-8, 100, -4, 4);
+    hlog_vs_ttop_tbot[1][i]->SetLineColor(kRed);
+  }
+
+  TH2F *hratio_vs_ttop_tbot[2][NBARS];
+  for (int i = 0; i < NBARS; i++)
+  {
+    hratio_vs_ttop_tbot[0][i] = new TH2F(Form("h0ratio_vs_ttop_tbot%d", i), Form("h0ratio_vs_ttop_tbot%d", i), 100, -3e-8, 3e-8, 100, 0, 25);
+    hratio_vs_ttop_tbot[1][i] = new TH2F(Form("h1ratio_vs_ttop_tbot%d", i), Form("h1ratio_vs_ttop_tbot%d", i), 100, -3e-8, 3e-8, 100, 0, 25);
+    hratio_vs_ttop_tbot[1][i]->SetLineColor(kRed);
+  }
+
   TH1F *hn[2];
   hn[0] = new TH1F("hn0", "hn0", 12, 1, 13);
   hn[1] = new TH1F("hn1", "hn1", 12, 1, 13);
@@ -128,7 +160,7 @@ double macro_1bar(int barnumber=0)
   for (int num = 0; num < 2; num++)
   {
 
-    simple test(gname[num].c_str(), 0);
+    simple test(gname[num], 0);
 
     if (isMC[num])
       test.SetMLUTable("./mlu_pbars_bottom_trap.dat");
@@ -265,6 +297,9 @@ double macro_1bar(int barnumber=0)
           habot[num][k]->Fill(cal_abot[k].at(j));
 
           hlog[num][k]->Fill(TMath::Log(cal_abot[k].at(j) / cal_atop[k].at(j)));
+
+          hlog_vs_ttop_tbot[num][k]->Fill(cal_ttop_tbot[k].at(j), TMath::Log(cal_abot[k].at(j) / cal_atop[k].at(j)));
+          hratio_vs_ttop_tbot[num][k]->Fill( cal_ttop_tbot[k].at(j), cal_abot[k].at(j) / cal_atop[k].at(j));
         }
       }
 
@@ -273,6 +308,7 @@ double macro_1bar(int barnumber=0)
   }
 
   TCanvas c[NBARS];
+  TCanvas c2d[NBARS];
   for (int k = 0; k < NBARS; k++)
   {
     if(k!=barnumber) continue;
@@ -300,6 +336,19 @@ double macro_1bar(int barnumber=0)
     httop_tbot[0][k]->DrawNormalized("same");
 
     c[k].SaveAs(Form("Plots_Multbars/status_bar%d.png", k));
+    
+    c2d[k].Divide(2,2);
+    c2d[k].cd(1);
+    hlog_vs_ttop_tbot[1][k]->Draw("colz");
+    c2d[k].cd(2);
+    hlog_vs_ttop_tbot[0][k]->Draw("colz");
+    c2d[k].cd(3);
+    hratio_vs_ttop_tbot[1][k]->Draw("colz");
+    c2d[k].cd(4);
+    hratio_vs_ttop_tbot[0][k]->Draw("colz");
+
+    c2d[k].SaveAs(Form("Plots_Multbars/status2d_bar%d.png", k));
+
   }
 
   TH1F *href;
