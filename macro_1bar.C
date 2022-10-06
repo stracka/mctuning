@@ -25,17 +25,18 @@ double macro_1bar(int barnumber=0, int filenumber = 0)
   TString Sthreshold = (TString)(filename(thrsindex+4,pointIndex-(thrsindex+4)));
   double threshold = Sthreshold.Atof();
 
-  gStyle->SetOptStat(0);
+  //gStyle->SetOptStat(0);
 
   double mlu_scale =0.5;
   double c_Ej = 158559135.35984075;
   double t_smearing = 800e-12;
 
-  double top_gain[NBARS]; 
-  double top_spread[NBARS];
+  double top_gain[NBARS];
+  //double qE_top[NBARS];
+  //double deltaE_top[NBARS];
   double bot_gain[NBARS];
-  double bot_spread[NBARS];
-  double deltaE_a[NBARS];
+  double qE[NBARS];
+  double kE[NBARS];
   double gain_c[NBARS];
   double lambda[NBARS];
 
@@ -52,12 +53,13 @@ double macro_1bar(int barnumber=0, int filenumber = 0)
     while (iFile >> p) 
     {
       if (cont == 0)      top_gain[i] = p;
-      else if (cont == 1) top_spread[i] = p;
-      else if (cont == 2) bot_gain[i] = p;
-      else if (cont == 3) bot_spread[i] = p;
-      else if (cont == 4) deltaE_a[i] = p;
-      else if (cont == 5) gain_c[i] = p;
-      else if (cont == 6) lambda[i] = p;
+      // else if (cont == 1) qE_top[i] = p;
+      // else if (cont == 2) deltaE_top[i] = p;
+      else if (cont == 1) bot_gain[i] = p;
+      else if (cont == 2) qE[i] = p;
+      else if (cont == 3) kE[i] = p;
+      else if (cont == 4) gain_c[i] = p;
+      else if (cont == 5) lambda[i] = p;  
 
       cont++;
     }
@@ -91,14 +93,14 @@ double macro_1bar(int barnumber=0, int filenumber = 0)
   const double zmin = -1.3;
   const double zmax = 1.3;
 
-  double gain_top[NBARS];
-  double gain_bot[NBARS];
+  // double gain_top[NBARS];
+  // double gain_bot[NBARS];
 
-  for (int i = 0; i < NBARS; i++)
-  {
-    gain_top[i] = top_gain[i] + gRandom->Gaus(0., top_gain[i] * top_spread[i]);
-    gain_bot[i] = bot_gain[i] + gRandom->Gaus(0., bot_gain[i] * bot_spread[i]);
-  }
+  // for (int i = 0; i < NBARS; i++)
+  // {
+  //   gain_top[i] = top_gain[i] + gRandom->Gaus(0., top_gain[i] * top_spread[i]);
+  //   gain_bot[i] = bot_gain[i] + gRandom->Gaus(0., bot_gain[i] * bot_spread[i]);
+  // }
 
   // arXiv: 1905.06032 SiPM + Scint non linearity
   // https://ieeexplore.ieee.org/document/5874113 resolution
@@ -231,12 +233,12 @@ double macro_1bar(int barnumber=0, int filenumber = 0)
           // double Eres_top = deltaE_a * TMath::Exp(-deltaE_b*TMath::Log(atop));
           // double Eres_bot = deltaE_a * TMath::Exp(-deltaE_b*TMath::Log(abot));
 
-          double Eres_top = deltaE_a[bars_id_rot.at(j)] / TMath::Sqrt(atop);
-          double Eres_bot = deltaE_a[bars_id_rot.at(j)] / TMath::Sqrt(abot);
+          double Eres_top = TMath::Sqrt(qE[bars_id_rot.at(j)] + kE[bars_id_rot.at(j)] / atop);
+          double Eres_bot = TMath::Sqrt(qE[bars_id_rot.at(j)] + kE[bars_id_rot.at(j)] / abot);
 
           // include non-linearity and resolution
-          atop = gain_top[bars_id_rot.at(j)] / gain_c[bars_id_rot.at(j)] * (1 - TMath::Exp(-gain_c[bars_id_rot.at(j)] * atop)) * gRandom->Gaus(1., Eres_top);
-          abot = gain_bot[bars_id_rot.at(j)] / gain_c[bars_id_rot.at(j)] * (1 - TMath::Exp(-gain_c[bars_id_rot.at(j)] * abot)) * gRandom->Gaus(1., Eres_bot);
+          atop = top_gain[bars_id_rot.at(j)] / gain_c[bars_id_rot.at(j)] * (1 - TMath::Exp(-gain_c[bars_id_rot.at(j)] * atop)) * gRandom->Gaus(1., Eres_top);
+          abot = bot_gain[bars_id_rot.at(j)] / gain_c[bars_id_rot.at(j)] * (1 - TMath::Exp(-gain_c[bars_id_rot.at(j)] * abot)) * gRandom->Gaus(1., Eres_bot);
 
           if (atop > thres * mlu_scale && abot > thres * mlu_scale)
           {

@@ -37,15 +37,18 @@ class BarObj:
         self.BarNumber = barn
 
     def objective(self,trial): #fai solo per due barre (e per eventi con 1 barra e con 2 barre) e poi aggiungi parametri tdc
+
         mydict_temp = {        
-            "top_gain":[0.1,1.5,False],        
-            "top_spread":[0.001,0.3,True],     #togliere x barre singole   
+            "top_gain":[0.1,1.5,False],
+            #"qE_top":[0.001,0.50,True], #1) mettere stessi parametri per top e bot (resolution)
+            #"deltaE_top":[0.001,0.5,True],
             "bot_gain":[0.1,1.5,False],
-            "bot_spread":[0.001,0.3,True],     #togliere x barre singole   
-            "deltaE_a":[0.001,0.50,True],      # aggiungere 1 x top e 1 x bot-> rivedi parametrizzazione  
+            "qE":[0.001,0.50,True],
+            "kE":[0.001,0.5,True], 
             "gain_c":[0.001,2.5,True],
             "lambda":[0.7,2,False]
-        }
+        }    
+            #2) selezionare eventi con 1 sola barra
 
             #{
             #"mlu_scale":[0.,1.,False],
@@ -73,6 +76,21 @@ class BarObj:
         return x
 
 
+    def objectiveT(trial): #fai solo per due barre (e per eventi con 1 barra e con 2 barre) e poi aggiungi parametri tdc
+        mydict = {"c_Ej":[0.5e8,2e8,False], "t_smearing":[0.1e-9,3e-9,True]}
+        #"mlu_scale":[0.,1.,False] non si può fare se non si fa il tunning di tutte e 64 le barre
+
+        for key in mydict:
+            val = trial.suggest_float(key,mydict[key][0],mydict[key][1],log=mydict[key][2]) #log se è true
+        
+        command = "root -l -b -q macro_1bar.C+\("+str(self.BarNumber) +",1\) | grep double | awk '{print $2}' "    
+        print(command)
+        out = subprocess.run(command,shell=True,capture_output=True)
+        x = float(out.stdout.decode())
+
+        return x
+
+
 
 
 def optuna_mc(n_trials=100, timeout=600):#(n_trials=500, timeout=1800): #quando fermare ottimizzazione
@@ -80,7 +98,7 @@ def optuna_mc(n_trials=100, timeout=600):#(n_trials=500, timeout=1800): #quando 
     https://arxiv.org/pdf/1907.10902.pdf
     https://optuna.org/
     """
-    nbars=64
+    nbars=2
 
     SEED = 4005    
 
@@ -121,6 +139,13 @@ def optuna_mc(n_trials=100, timeout=600):#(n_trials=500, timeout=1800): #quando 
         subprocess.run(command,shell=True,capture_output=True)
         print("\n")
 
+    # studyTot = optuna.create_study(
+    #     direction="minimize",
+    #     sampler=optuna.samplers.TPESampler(seed=SEED),
+    #     pruner=optuna.pruners.MedianPruner(n_warmup_steps=10),
+    # )
+    # studyTot.optimize(, n_trials=n_trials, timeout=timeout)
+    
     return 
 
 
