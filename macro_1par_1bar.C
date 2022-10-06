@@ -288,14 +288,14 @@ double macro_1par_1bar(int filenumber = 0)
       {
         for (int j = 0; j < cal_ttop_tbot[k].size(); j++)
         {
-          httop_tbot[num][k]->Fill(cal_ttop_tbot[k].at(j));
+          httop_tbot[num][k]->Fill(-cal_ttop_tbot[k].at(j));
           hatop[num][k]->Fill(cal_atop[k].at(j));
           habot[num][k]->Fill(cal_abot[k].at(j));
 
-          hlog[num][k]->Fill(TMath::Log(cal_abot[k].at(j) / cal_atop[k].at(j)));
+          hlog[num][k]->Fill(TMath::Log(cal_atop[k].at(j)/cal_abot[k].at(j)));
 
-          hlog_vs_ttop_tbot[num][k]->Fill(cal_ttop_tbot[k].at(j), TMath::Log(cal_abot[k].at(j) / cal_atop[k].at(j)));
-          hratio_vs_ttop_tbot[num][k]->Fill( cal_ttop_tbot[k].at(j), cal_abot[k].at(j) / cal_atop[k].at(j));
+          hlog_vs_ttop_tbot[num][k]->Fill(-cal_ttop_tbot[k].at(j), -TMath::Log(cal_abot[k].at(j) / cal_atop[k].at(j)));
+          hratio_vs_ttop_tbot[num][k]->Fill( -cal_ttop_tbot[k].at(j), cal_atop[k].at(j)/cal_abot[k].at(j));
         }
       }
 

@@ -193,16 +193,16 @@ double macro_mlu_1bar(double mlu_scale = 0.5,
         /*if ((isMC[num] && NBars_MC == 1) ||*/ 
         if(cal_id.size() == 1)
         {
-          hlog[num]->Fill(TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
-          hlog_vs_ttop_tbot[num]->Fill(cal_ttop_tbot.at(j), TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
-          hratio_vs_ttop_tbot[num]->Fill( cal_ttop_tbot.at(j), cal_abot.at(j) / cal_atop.at(j));
+          hlog[num]->Fill(-TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
+          hlog_vs_ttop_tbot[num]->Fill(-cal_ttop_tbot.at(j), -TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
+          hratio_vs_ttop_tbot[num]->Fill( -cal_ttop_tbot.at(j),  cal_atop.at(j)/cal_abot.at(j) );
         }
       }
 
       for (int j = 0; j < cal_ttop_tbot.size(); j++)
       {
         /*if ((isMC[num] && NBars_MC == 1) ||*/ if(cal_id.size() == 1)
-          httop_tbot[num]->Fill(cal_ttop_tbot.at(j));
+          httop_tbot[num]->Fill(-cal_ttop_tbot.at(j));
       }
 
       hn[num]->Fill(cal_id.size());

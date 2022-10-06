@@ -3,15 +3,15 @@
 
 double macro_mlu(double mlu_scale = 0.5,
                  double top_gain = 0.1944,
-                 double top_spread = 0.2,
+                 double top_spread = 0.2, //top gain spread
                  double bot_gain = 0.1944,
                  double bot_spread = 0.2,
-                 double deltaE_a = 0.07,
+                 double deltaE_a = 0.07, //k
                  double gain_c = 0.1,
                  double lambda = 1.3,
                  double c_Ej = 299792458 / 1.93,
                  double t_smearing = 500e-12,
-                 int filenumber = 0)
+                 int filenumber = 0) // introduci anche q nella risoluzione in energia
 {
   TString filename;
 
@@ -77,9 +77,9 @@ double macro_mlu(double mlu_scale = 0.5,
   TH1F *httop_tbot[2];
   httop_tbot[0] = new TH1F("httop_tbot0", "httop_tbot0", 50, -3e-8, 3e-8);
   httop_tbot[1] = new TH1F("httop_tbot1", "httop_tbot1", 50, -3e-8, 3e-8);
-  httop_tbot[1]->SetTitle("time TDCs top - TDCs bot");
+  httop_tbot[1]->SetTitle("time TDCs bot - TDCs top");
   httop_tbot[1]->SetTitleSize(0.07262164);
-  httop_tbot[1]->GetXaxis()->SetTitle("t_{top}-t_{bot} (s)");
+  httop_tbot[1]->GetXaxis()->SetTitle("t_{bot}-t_{top} (s)");
   httop_tbot[1]->GetXaxis()->SetTitleSize(0.045);
   httop_tbot[1]->SetLineColor(kRed);
   httop_tbot[0]->SetLineWidth(2);
@@ -101,9 +101,9 @@ double macro_mlu(double mlu_scale = 0.5,
   TH1F *hlog[2];
   hlog[0] = new TH1F("hlog0", "hlog0", 40, -4, 4);
   hlog[1] = new TH1F("hlog1", "hlog1", 40, -4, 4);
-  hlog[1]->SetTitle("log of bot/top Amplitudes");
+  hlog[1]->SetTitle("log of top/bot Amplitudes");
   hlog[1]->SetTitleSize(0.07262164);
-  hlog[1]->GetXaxis()->SetTitle("log(A_{bot}/A_{top})");
+  hlog[1]->GetXaxis()->SetTitle("log(A_{top}/A_{bot})");
   hlog[1]->GetXaxis()->SetTitleSize(0.045);
   hlog[1]->SetLineColor(kRed);
   hlog[0]->SetLineWidth(2);
@@ -220,12 +220,12 @@ double macro_mlu(double mlu_scale = 0.5,
         hatop[num]->Fill(cal_atop.at(j));
         habot[num]->Fill(cal_abot.at(j));
         
-        hlog[num]->Fill(TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
+        hlog[num]->Fill(-TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
 
-        hlog_vs_ttop_tbot[num]->Fill(cal_ttop_tbot.at(j), TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
-        hratio_vs_ttop_tbot[num]->Fill( cal_ttop_tbot.at(j), cal_abot.at(j) / cal_atop.at(j));
+        hlog_vs_ttop_tbot[num]->Fill(-cal_ttop_tbot.at(j), -TMath::Log(cal_abot.at(j) / cal_atop.at(j)));
+        hratio_vs_ttop_tbot[num]->Fill( -cal_ttop_tbot.at(j), cal_atop.at(j)/cal_abot.at(j));
     
-        httop_tbot[num]->Fill(cal_ttop_tbot.at(j));
+        httop_tbot[num]->Fill(-cal_ttop_tbot.at(j));
       }
 
       hn[num]->Fill(cal_id.size());
