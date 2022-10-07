@@ -35,10 +35,12 @@ def objective(trial):
 
     mydict = {        
         "mlu_scale":[0.,1.,False],
-        "top_gain":[0.1,1.5,False],        
+        "top_gain":[0.1,1.5,False],  
+        "top_spread":[0.001,0.3,True],  
         "qE_top":[0.001,0.5,True],        
         "kE_top":[0.001,0.5,True],        
         "bot_gain":[0.1,1.5,False],
+        "bot_spread":[0.001,0.3,True],  
         "qE_bot":[0.001,0.5,True],        
         "kE_bot":[0.001,0.5,True],        
         "gain_c":[0.001,2.5,True],

@@ -3,9 +3,11 @@
 
 double macro_mlu_newEPar(double mlu_scale = 0.5,
                          double top_gain = 0.1944,
+                         double top_spread = 0.2,
                          double qE_top = 0.2, 
                          double kE_top = 0.07, 
                          double bot_gain = 0.1944,
+                         double bot_spread = 0.2,
                          double qE_bot = 0.2,
                          double kE_bot = 0.07, 
                          double gain_c = 0.1,
@@ -37,14 +39,14 @@ double macro_mlu_newEPar(double mlu_scale = 0.5,
   double zmin = -1.3;
   double zmax = 1.3;
 
-  // double gain_top[64];
-  // double gain_bot[64];
+  double gain_top[64];
+  double gain_bot[64];
 
-  // for (int i = 0; i < 64; i++)
-  // {
-  //   gain_top[i] = top_gain + gRandom->Gaus(0., top_gain * top_spread);
-  //   gain_bot[i] = bot_gain + gRandom->Gaus(0., bot_gain * bot_spread);
-  // }
+  for (int i = 0; i < 64; i++)
+  {
+    gain_top[i] = top_gain + gRandom->Gaus(0., top_gain * top_spread);
+    gain_bot[i] = bot_gain + gRandom->Gaus(0., bot_gain * bot_spread);
+  }
 
   // arXiv: 1905.06032 SiPM + Scint non linearity
   // https://ieeexplore.ieee.org/document/5874113 resolution
@@ -170,8 +172,8 @@ double macro_mlu_newEPar(double mlu_scale = 0.5,
           double Eres_bot = TMath::Sqrt(qE_bot + kE_bot / abot);
 
           // include non-linearity and resolution
-          atop = top_gain / gain_c * (1 - TMath::Exp(-gain_c * atop)) * gRandom->Gaus(1., Eres_top);
-          abot = bot_gain / gain_c * (1 - TMath::Exp(-gain_c * abot)) * gRandom->Gaus(1., Eres_bot);
+          atop = gain_top[test.bars_id->at(j)] / gain_c * (1 - TMath::Exp(-gain_c * atop)) * gRandom->Gaus(1., Eres_top);
+          abot = gain_bot[test.bars_id->at(j)] / gain_c * (1 - TMath::Exp(-gain_c * abot)) * gRandom->Gaus(1., Eres_bot);
 
           if (atop > thres * mlu_scale && abot > thres * mlu_scale)
           {
