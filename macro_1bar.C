@@ -19,6 +19,9 @@ double macro_1bar(int barnumber=0, int filenumber = 0)
   if(filenumber == 5) filename = "DATA_BV_TREE_cosmics_run_output08926_low_sw_thrs300.root";
   if(filenumber == 6) filename = "DATA_BV_TREE_cosmics_run_output08925_low_sw_thrs300.root";
   if(filenumber == 7) filename = "DATA_BV_TREE_cosmics_runs_8925_8926_low_sw_thrs300.root";
+  if(filenumber == 8) filename = "DATA_BV_TREE_cosmics_run_output08925_sw_thrs500.root";
+  if(filenumber == 9) filename = "DATA_BV_TREE_cosmics_run_output08926_sw_thrs500.root";
+  if(filenumber == 10) filename = "DATA_BV_TREE_cosmics_runs_8925_8926_sw_thrs500.root";
 
   int pointIndex = filename.Index(".");
   int thrsindex = filename.Index("thrs");

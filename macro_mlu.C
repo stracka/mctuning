@@ -23,6 +23,9 @@ double macro_mlu(double mlu_scale = 0.5,
   if(filenumber == 5) filename = "DATA_BV_TREE_cosmics_run_output08926_low_sw_thrs300.root";
   if(filenumber == 6) filename = "DATA_BV_TREE_cosmics_run_output08925_low_sw_thrs300.root";
   if(filenumber == 7) filename = "DATA_BV_TREE_cosmics_runs_8925_8926_low_sw_thrs300.root";
+  if(filenumber == 8) filename = "DATA_BV_TREE_cosmics_run_output08925_sw_thrs500.root";
+  if(filenumber == 9) filename = "DATA_BV_TREE_cosmics_run_output08926_sw_thrs500.root";
+  if(filenumber == 10) filename = "DATA_BV_TREE_cosmics_runs_8925_8926_sw_thrs500.root";
 
   int pointIndex = filename.Index(".");
   int thrsindex = filename.Index("thrs");
@@ -144,6 +147,9 @@ double macro_mlu(double mlu_scale = 0.5,
 
         if (isMC[num])
         {
+          if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
+            continue;
+          
           double edep = test.bars_edep->at(j);
           double z = test.bars_z->at(j);
 
@@ -181,6 +187,8 @@ double macro_mlu(double mlu_scale = 0.5,
         }
         else
         {
+          if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
+            continue;
           double atop = test.bars_atop->at(j);
           double abot = test.bars_abot->at(j);
 
