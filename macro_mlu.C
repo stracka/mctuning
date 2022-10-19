@@ -146,10 +146,7 @@ double macro_mlu(double mlu_scale = 0.5,
       {
 
         if (isMC[num])
-        {
-          if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
-            continue;
-          
+        {          
           double edep = test.bars_edep->at(j);
           double z = test.bars_z->at(j);
 
@@ -178,17 +175,23 @@ double macro_mlu(double mlu_scale = 0.5,
           }
           if (atop > thres && abot > thres)
           {
+            cal_id.push_back(test.bars_id->at(j));
+
+            if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
+              continue;
+
             cal_atop.push_back(atop);
             cal_abot.push_back(abot);
             cal_ttop_tbot.push_back(ttop_tbot);
-            
-            cal_id.push_back(test.bars_id->at(j));
           }
         }
         else
         {
+          cal_id.push_back(test.bars_id->at(j));
+
           if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
             continue;
+          
           double atop = test.bars_atop->at(j);
           double abot = test.bars_abot->at(j);
 
@@ -199,8 +202,6 @@ double macro_mlu(double mlu_scale = 0.5,
           cal_atop.push_back(atop);
           cal_abot.push_back(abot);
           cal_ttop_tbot.push_back(ttop_tbot);
-          
-          cal_id.push_back(test.bars_id->at(j));
         }
       }
 
@@ -223,7 +224,7 @@ double macro_mlu(double mlu_scale = 0.5,
           continue;
       }
 
-      for (int j = 0; j < cal_id.size(); j++)
+      for (int j = 0; j < cal_atop.size(); j++)
       {
         hatop[num]->Fill(cal_atop.at(j));
         habot[num]->Fill(cal_abot.at(j));

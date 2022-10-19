@@ -150,14 +150,9 @@ double macro_mlu_newEPar(double mlu_scale = 0.5,
 
         if (isMC[num])
         {
-          if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
-            continue;
-          
+                   
           double edep = test.bars_edep->at(j);
           double z = test.bars_z->at(j);
-
-          double atop = edep * TMath::Exp(-(zmax - z)/lambda);
-          double abot = edep * TMath::Exp(-(z - zmin)/lambda);
 
           double thit = test.bars_t->at(j);
           double ttop = thit + (zmax - z) / c_Ej + gRandom->Gaus(0, t_smearing); //preparare tuning barre saparate
@@ -168,12 +163,21 @@ double macro_mlu_newEPar(double mlu_scale = 0.5,
           // double Eres_top = deltaE_a * TMath::Exp(-deltaE_b*TMath::Log(atop));
           // double Eres_bot = deltaE_a * TMath::Exp(-deltaE_b*TMath::Log(abot));
 
-          double Eres_top = TMath::Sqrt(qE_top + kE_top / atop);
-          double Eres_bot = TMath::Sqrt(qE_bot + kE_bot / abot);
+          double atop = edep * TMath::Exp(-(zmax - z)/lambda);
+          double abot = edep * TMath::Exp(-(z - zmin)/lambda);
+
+          double Eres_top = atop*TMath::Sqrt(qE_top + kE_top / atop);
+          double Eres_bot = abot*TMath::Sqrt(qE_bot + kE_bot / abot);
+
+          atop+=gRandom->Gaus(0., Eres_top);
+          abot+=gRandom->Gaus(0., Eres_bot);
 
           // include non-linearity and resolution
-          atop = gain_top[test.bars_id->at(j)] / gain_c * (1 - TMath::Exp(-gain_c * atop)) * gRandom->Gaus(1., Eres_top);
-          abot = gain_bot[test.bars_id->at(j)] / gain_c * (1 - TMath::Exp(-gain_c * abot)) * gRandom->Gaus(1., Eres_bot);
+          atop *= gain_top[test.bars_id->at(j)];
+          abot *= gain_bot[test.bars_id->at(j)];
+
+          atop = (1 - TMath::Exp(-gain_c * atop))/ gain_c;
+          abot = (1 - TMath::Exp(-gain_c * abot))/ gain_c;
 
           if (atop > thres * mlu_scale && abot > thres * mlu_scale)
           {
@@ -181,17 +185,23 @@ double macro_mlu_newEPar(double mlu_scale = 0.5,
           }
           if (atop > thres && abot > thres)
           {
+            cal_id.push_back(test.bars_id->at(j));
+
+            if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
+              continue;
+
             cal_atop.push_back(atop);
             cal_abot.push_back(abot);
             cal_ttop_tbot.push_back(ttop_tbot);
-            
-            cal_id.push_back(test.bars_id->at(j));
           }
         }
         else
         {
+          cal_id.push_back(test.bars_id->at(j));
+
           if(test.bars_id->at(j) == 33 || test.bars_id->at(j) == 31 || test.bars_id->at(j) == 30 || test.bars_id->at(j) == 29 || test.bars_id->at(j) == 28 )
             continue;
+          
           double atop = test.bars_atop->at(j);
           double abot = test.bars_abot->at(j);
 
@@ -202,8 +212,6 @@ double macro_mlu_newEPar(double mlu_scale = 0.5,
           cal_atop.push_back(atop);
           cal_abot.push_back(abot);
           cal_ttop_tbot.push_back(ttop_tbot);
-          
-          cal_id.push_back(test.bars_id->at(j));
         }
       }
 
@@ -226,7 +234,7 @@ double macro_mlu_newEPar(double mlu_scale = 0.5,
           continue;
       }
 
-      for (int j = 0; j < cal_id.size(); j++)
+      for (int j = 0; j < cal_atop.size(); j++)
       {
         hatop[num]->Fill(cal_atop.at(j));
         habot[num]->Fill(cal_abot.at(j));
